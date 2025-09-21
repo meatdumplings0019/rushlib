@@ -42,6 +42,9 @@ class Text:
     def __getitem__(self, item):
         return self.text[item]
 
+    def __iter__(self):
+        return self.text.__iter__()
+
     def __str__(self):
         return f'{self.color}{self.text}{Style.RESET_ALL}'
 

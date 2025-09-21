@@ -113,7 +113,10 @@ class MColor:
         return rgb_to_hex(self.r, self.g, self.b)
 
     def __iter__(self):
-        return iter((self.r, self.g, self.b, self.a))
+        yield self.r
+        yield self.g
+        yield self.b
+        yield self.a
 
     def __len__(self):
         return 4
