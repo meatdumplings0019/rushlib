@@ -1,5 +1,6 @@
 ﻿from rushlib.math import vec2
 
-x, y = vec2(0, 0)
+v1 = vec2(2, 1)
+v2 = vec2(1, 2)
 
-print(x, y)
+print(v1 / v2)

@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf8") as fh:
 
 setup(
     name='rushlib',
-    version='0.1.3',
+    version='0.1.4',
     packages=find_packages(),
     requires=[
         'colorama'
