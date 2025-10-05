@@ -10,8 +10,8 @@ class Vector2:
     __slots__ = ('x', 'y')
 
     def __init__(self, x: Number = 0, y: Number = 0):
-        self.x = float(x)
-        self.y = float(y)
+        self.x = x
+        self.y = y
 
     def __repr__(self) -> str:
         return f"Vec2({self.x}, {self.y})"
@@ -52,6 +52,16 @@ class Vector2:
 
     def __abs__(self) -> float:
         return math.sqrt(self.x * self.x + self.y * self.y)
+
+    def __iter__(self):
+        yield self.x
+        yield self.y
+
+    def __getitem__(self, item):
+        return self.__dict__[item]
+
+    def __len__(self):
+        return 2
 
     def dot(self, other: 'Vector2') -> float:
         """点积"""
@@ -164,9 +174,9 @@ class Vector3:
     __slots__ = ('x', 'y', 'z')
 
     def __init__(self, x: Number = 0, y: Number = 0, z: Number = 0):
-        self.x = float(x)
-        self.y = float(y)
-        self.z = float(z)
+        self.x = x
+        self.y = y
+        self.z = z
 
     def __repr__(self) -> str:
         return f"Vec3({self.x}, {self.y}, {self.z})"
@@ -209,6 +219,17 @@ class Vector3:
 
     def __abs__(self) -> float:
         return math.sqrt(self.x * self.x + self.y * self.y + self.z * self.z)
+
+    def __iter__(self):
+        yield self.x
+        yield self.y
+        yield self.z
+
+    def __getitem__(self, item):
+        return self.__dict__[item]
+
+    def __len__(self):
+        return 3
 
     def dot(self, other: 'Vector3') -> float:
         """点积"""
