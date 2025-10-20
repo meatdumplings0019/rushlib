@@ -9,9 +9,6 @@ def smart_call(func: Callable, *args: Any, **kwargs: Any) -> Any:
     智能调用函数，根据目标函数的参数签名自动匹配传入的参数
 
     :param func: 要调用的目标函数
-    :param *args: 位置参数
-    :param **kwargs: 关键字参数
-
     :return: 目标函数的执行结果
     """
     try:
