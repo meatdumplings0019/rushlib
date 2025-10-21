@@ -1,82 +1,89 @@
-﻿import importlib.util
+﻿import dataclasses
+import importlib.util
 import sys
-from pathlib import Path
-from typing import Union, Optional
 
 from rushlib.func.injection import FunctionInjection
+from rushlib.types import path_type
+
+
+def include(src: path_type):
+    sys.path.insert(0, str(src))
+
+
+@dataclasses.dataclass
+class ModuleInfo:
+    name: str = None
+    funcs: dict = None
 
 
 class ModuleLoader:
-    def __init__(self, path: Union[Path, str], name: str, main: str,
-                 injection_file: Optional[str] = None, func_injection: dict = None) -> None:
+    def __init__(self, root: path_type, pack: ModuleInfo, main: str, func: ModuleInfo) -> None:
         """
-        :param path: 包的位置
-        :param name: 主包的名
-        :param main: 主文件名
-        :param injection_file: 函数注入名
-        :param func_injection: 注入的函数或者类
+        :param root: 包的位置
         """
 
-        self.path = path
-        self.name = name
+        self.root = root
+        self.pack = pack
         self.main = main
-        self.injection_file = injection_file or "func"
-        self.func_injection = func_injection or {}
+        self.func = func
 
     def __enter__(self):
+        name = self.pack.name
+        func = self.func.name or "func"
+        funcs = self.func.funcs or {}
+
         spec = importlib.util.spec_from_loader(
-            self.name,
+            name,
             loader=None,
-            origin=str(self.path),
+            origin=str(self.root),
             is_package=True
         )
         if spec is None:
-            raise ImportError(f"无法创建包规范: {self.name}")
+            raise ImportError(f"无法创建包规范: {name}")
 
         package_module = importlib.util.module_from_spec(spec)
-        sys.modules[self.name] = package_module
+        sys.modules[name] = package_module
 
-        package_module.__path__ = [str(self.path)]
-        package_module.__package__ = self.name
+        package_module.__path__ = [str(self.root)]
+        package_module.__package__ = name
 
-        with FunctionInjection(self.path, self.name, self.injection_file,
-                               self.func_injection):
+        with FunctionInjection(self.root, name, func, funcs):
             pass
 
-        entry_file = self.path / self.main
+        entry_file = self.root / self.main
         if not entry_file.exists():
-            func_module_name = f"{self.name}.func"
+            func_module_name = f"{name}.{func}"
             if func_module_name in sys.modules:
                 del sys.modules[func_module_name]
-            del sys.modules[self.name]
+            del sys.modules[name]
             raise FileNotFoundError(f"入口文件 {self.main} 不存在")
 
-        main_module_name = f"{self.name}.main"
+        main_module_name = f"{name}.{self.main}"
         spec = importlib.util.spec_from_file_location(
             main_module_name,
             str(entry_file),
-            submodule_search_locations=[str(self.path)],
+            submodule_search_locations=[str(self.root)],
         )
         if spec is None:
-            func_module_name = f"{self.name}.func"
+            func_module_name = f"{name}.{func}"
             if func_module_name in sys.modules:
                 del sys.modules[func_module_name]
-            del sys.modules[self.name]
+            del sys.modules[name]
             raise ImportError(f"无法创建模块规范: {entry_file}")
 
         main_module = importlib.util.module_from_spec(spec)
         sys.modules[main_module_name] = main_module
 
         try:
-            main_module.__package__ = self.name
+            main_module.__package__ = name
 
             spec.loader.exec_module(main_module)
         except Exception as e:
             del sys.modules[main_module_name]
-            func_module_name = f"{self.name}.func"
+            func_module_name = f"{name}.{func}"
             if func_module_name in sys.modules:
                 del sys.modules[func_module_name]
-            del sys.modules[self.name]
+            del sys.modules[name]
             raise RuntimeError(f"主模块执行失败: {str(e)}")
 
         return package_module, main_module

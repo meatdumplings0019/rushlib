@@ -59,7 +59,7 @@ class Stream:
             source.unlink(missing_ok=True)
 
     def __eq__(self, other):
-        return self.path == other.path
+        return self.path == other.root
 
     def __str__(self) -> str:
         return str(self.path)
